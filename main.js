@@ -34,19 +34,6 @@ const throttle = fn => {
     };
 };
 const id = i => document.getElementById(i);
-const v = n => [n, n];
-const v_add = ([p1_x, p1_y], [p2_x, p2_y]) => [p1_x + p2_x, p1_y + p2_y];
-const v_sub = ([p1_x, p1_y], [p2_x, p2_y]) => [p1_x - p2_x, p1_y - p2_y];
-const v_mul = ([p_x, p_y], n) => [p_x * n, p_y * n];
-const v_div = ([p_x, p_y], n) => [p_x / n, p_y / n];
-const m_mid_move = (point_1, point_2, movement) => {
-    const pm = v_div(v_add(point_1, point_2), 2);
-    const dir = v_sub(point_1, point_2);
-    const nor = v_div([-dir[1], dir[0]], 2);
-    const mov = v_mul(nor, movement);
-    const res = v_add(pm, mov);
-    return res;
-};
 const normalize = stream => {
     const res = [];
     let lf = null;
@@ -179,14 +166,13 @@ const DEFAULT_SETS = {
         type: "line",
         id: "l1",
         modifiers: [
-            ["RMDF", 0.5, 10],
+            ["RMDF", 0.5, 8, 1],
         ],
         data: ["p1", "p2", "p3", "p4", "p1"],
     }],
     "data-lands": [{
         type: "land",
-        id: "ld1",
-        data: ["l1"],
+        data: ["ld1", "l1"],
     }],
 };
 
@@ -217,65 +203,38 @@ const App = canvas => {
         set_data("d-sample-lines", sets["data-sample-lines"]);
         set_data("d-lands", sets["data-lands"]);
     };
-
-    const u_percent = point => {
-        return [canvas.width * point[0], canvas.height * point[1]];
+    const km2px_unit = () => {
+        const r = sets["map-resolution"] / 1000;
+        return ([x, y]) => [x * r, y * r];
     };
-    const rline_resolve = (fn, rline) => {
-        const [p1, p2] = rline;
-        return [p1].concat(__rline_resolve(fn, rline), [p2]);
-    };
-    const __rline_resolve = (fn, rline) => {
-        const [p1, p2, arg, sub1, sub2] = rline;
-        const pm = fn(p1, p2, arg);
-        const l1 = sub1 ? __rline_resolve(fn, [p1, pm].concat(sub1)) : [];
-        const l2 = sub2 ? __rline_resolve(fn, [pm, p2].concat(sub2)) : [];
-        return l1.concat([pm], l2);
-    };
-    const rline_generate = (point_1, point_2, deepth, fn) => {
-        const res = [];
-        for (let i = 0; i < deepth; i++) {
-            const count = 2 ** i;
-            const r = new Array(count).fill(0).map(() => [fn(i)]);
-            res.push(r);
+    
+    const calc_data = () => {
+        const spoints = new Map();
+        const slines = new Map();
+        const lands = new Map();
+        for (const obj of sets["data-sample-points"]) {
+            spoints.set(obj.data[0], obj.data.slice(1));
         }
-        return [point_1, point_2].concat(...res.reduceRight((acu, cur) => cur.map((e, i) => e.concat([acu[i * 2]], [acu[i * 2 + 1]]))));
+        for (const obj of sets["data-sample-lines"]) {
+            let line = obj.data.map(pid => spoints.get(pid));
+            for (const mdf of obj.modifiers) {
+                line = modifiers[mdf[0]](line, ...mdf.slice(1));
+            }
+            slines.set(obj.id, line);
+        }
+        for (const obj of sets["data-lands"]) {
+            const land = obj.data.slice(1).map(lid => slines.get(lid));
+            lands.set(obj.data[0], land);
+        }
+        return {spoints, slines, lands};
     };
 
     const draw = () => {
-        const rand = () => (Math.random() - 0.5) * 1;
-        const rline1 = rline_generate(
-            u_percent([0.1, 0.5]),
-            u_percent([0.5, 0.2]),
-            10,
-            rand,
-        );
-        const rline2 = rline_generate(
-            u_percent([0.5, 0.2]),
-            u_percent([0.9, 0.5]),
-            10,
-            rand,
-        );
-        const rline3 = rline_generate(
-            u_percent([0.9, 0.5]),
-            u_percent([0.5, 0.8]),
-            10,
-            rand,
-        );
-        const rline4 = rline_generate(
-            u_percent([0.5, 0.8]),
-            u_percent([0.1, 0.5]),
-            10,
-            rand,
-        );
-        const area = rline_resolve(m_mid_move, rline1).concat(
-            rline_resolve(m_mid_move, rline2),
-            rline_resolve(m_mid_move, rline3),
-            rline_resolve(m_mid_move, rline4),
-        );
+        const data = calc_data();
         shader({
             context,
-            lands: [area],
+            lands: [...data.lands.values()],
+            unit: km2px_unit(),
         })
     };
     
@@ -287,11 +246,3 @@ const App = canvas => {
 };
 
 const app = App(cav);
-
-// const resize = () => {
-//     view.width = view.clientWidth;
-//     view.height = view.clientHeight;
-//     app.redraw();
-// };
-// window.addEventListener("resize", throttle(resize));
-// resize();

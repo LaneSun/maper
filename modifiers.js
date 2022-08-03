@@ -11,8 +11,15 @@ const m_mid_move = (point_1, point_2, movement) => {
     const res = v_add(pm, mov);
     return res;
 };
+const gen_randomer = seed => {
+    let s = seed;
+    return () => {
+        s = (s * 9301 + 49297) % 233280;
+        return s / 233280.0;
+    };
+};
 
-const do_RMDF = (line, roughness) => {
+const do_RMDF = (line, roughness, random) => {
     const res = new Array(line.length * 2 - 1);
     for (let i = 0; i < line.length; i++)
         res[i * 2] = line[i];
@@ -20,16 +27,17 @@ const do_RMDF = (line, roughness) => {
         res[i * 2 - 1] = m_mid_move(
             line[i - 1],
             line[i],
-            (Math.random() - 0.5) * 2 * roughness;
+            (random() - 0.5) * 2 * roughness
         );
     return res;
 };
 
 export const modifiers = {
-    "RMDF": (line, roughness, time) => {
+    "RMDF": (line, roughness, time, seed) => {
+        const random = gen_randomer(seed);
         let res = line;
         for (let i = 0; i < time; i++) {
-            res = do_RMDF(res, roughness);
+            res = do_RMDF(res, roughness, random);
         }
         return res;
     },
