@@ -9,16 +9,16 @@
     <div class="panel">
       <div class="section">
         <div class="head">全局设置</div>
-        <div class="entry" label="地图东西横跨" suffix="km">
+        <label class="entry" label="地图东西横跨" suffix="km">
           <input id="i-map-width" type="text" />
-        </div>
-        <div class="entry" label="地图南北横跨" suffix="km">
+        </label>
+        <label class="entry" label="地图南北横跨" suffix="km">
           <input id="i-map-height" type="text" />
-        </div>
-        <div class="entry" label="渲染分辨率" suffix="px/10³km">
+        </label>
+        <label class="entry" label="渲染分辨率" suffix="px/10³km">
           <input id="i-map-resolution" type="text" />
-        </div>
-        <div class="but" trigger="apply_global_sets">应用</div>
+        </label>
+        <div class="but trigger" trigger="apply_global_sets">应用</div>
       </div>
       <div class="section">
         <div class="head">渲染</div>
@@ -34,17 +34,33 @@
         <label class="entry" label="风格化">
           <input id="i-do-stylize" type="checkbox" />
         </label>
-        <div class="but" trigger="apply_render_sets">应用</div>
+        <div class="title">裁剪</div>
+        <label class="entry" label="裁剪边距" suffix="px">
+          <input id="i-crop-border" type="text" />
+        </label>
+        <label class="entry" label="裁剪采样点间距" suffix="px">
+          <input id="i-crop-spoint-space" type="text" />
+        </label>
+        <label class="entry" label="裁剪细分粗糙度">
+          <input id="i-crop-roughness" type="text" />
+        </label>
+        <label class="entry" label="裁剪细分次数">
+          <input id="i-crop-sub-time" type="text" />
+        </label>
+        <label class="entry" label="裁剪细分种子">
+          <input id="i-crop-seed" type="text" />
+        </label>
+        <div class="but trigger" trigger="apply_render_sets">应用</div>
       </div>
       <div class="section">
         <div class="head">导入</div>
-        <textarea class="textfield"></textarea>
-        <div class="but" trigger="do_import">导入</div>
+        <textarea id="t-import" class="textfield"></textarea>
+        <div class="but trigger" trigger="do_import">导入</div>
       </div>
       <div class="section">
         <div class="head">导出</div>
-        <textarea class="textfield"></textarea>
-        <div class="but" trigger="do_export">导出</div>
+        <div id="t-export" class="textfield" contenteditable spellcheck="false"></div>
+        <div class="but trigger" trigger="do_export">导出</div>
       </div>
       <div class="section">
         <div class="head">元数据</div>
@@ -56,7 +72,9 @@
         <div id="d-lands" class="databox"></div>
         <div class="title">线条</div>
         <div class="databox"></div>
-        <div class="but" trigger="update_data">更新</div>
+        <div class="title">区域</div>
+        <div id="d-fields" class="databox"></div>
+        <div class="but trigger" trigger="update_data">更新</div>
       </div>
     </div>
     <div id="view"></div>

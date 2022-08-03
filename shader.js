@@ -10,12 +10,16 @@ const trace_lines = (ctx, unit, lines) => {
 };
 
 export const shader = ({
+    crop,
     lands,
     borders,
+    waves,
+    grass,
+    mountains,
     unit,
     context,
 }) => {
-    const BG_C = "#ffffff";
+    const BG_C = "#FFEACD";
     
     const ctx = context;
     const cav = ctx.canvas;
@@ -33,6 +37,16 @@ export const shader = ({
         ctx.fillRect(0, 0, cavw, cavh);
     });
     
+    // set crop
+    ctx.beginPath();
+    trace_line(ctx, n => n, crop);
+//     with_env(() => {
+//         ctx.strokeStyle = "#5e564b";
+//         ctx.lineWidth = 4;
+//         ctx.stroke();
+//     });
+    ctx.clip();
+    
     // background
     clear();
     
@@ -44,7 +58,7 @@ export const shader = ({
     
     // outline
     with_env(() => {
-        ctx.strokeStyle = "#cccccc";
+        ctx.strokeStyle = "#b4a591";
         ctx.lineWidth = 20;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
@@ -57,7 +71,7 @@ export const shader = ({
     
     // sea-land line
     with_env(() => {
-        ctx.strokeStyle = "#000000";
+        ctx.strokeStyle = "#b4a591";
         ctx.lineWidth = 1;
         ctx.beginPath();
         for (let y = 5.5; y < cavh; y += 4) {
@@ -66,11 +80,14 @@ export const shader = ({
         }
         ctx.globalCompositeOperation = "destination-atop";
         ctx.stroke();
+        ctx.fillStyle = BG_C;
+        ctx.globalCompositeOperation = "destination-atop";
+        ctx.fillRect(0, 0, cavw, cavh);
     });
     
     // fill land
     with_env(() => {
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = BG_C;
         ctx.beginPath();
         for (const land of lands)
             trace_lines(ctx, unit, land);
@@ -80,7 +97,7 @@ export const shader = ({
     
     // stroke land
     with_env(() => {
-        ctx.strokeStyle = "#000000";
+        ctx.strokeStyle = "#514a41";
         ctx.lineWidth = 1;
         ctx.lineJoin = "bevel";
         ctx.lineCap = "bevel";
@@ -89,5 +106,55 @@ export const shader = ({
             trace_lines(ctx, unit, land);
         ctx.globalCompositeOperation = "source-over";
         ctx.stroke();
+    });
+    
+    // stroke wave
+    with_env(() => {
+        ctx.strokeStyle = "#b4a591";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (const e of waves) {
+            const p = unit(e);
+            ctx.moveTo(p[0] - 15, p[1] + 2);
+            ctx.lineTo(p[0] - 10, p[1] + 2);
+            ctx.lineTo(p[0] - 5, p[1] + 1);
+            ctx.lineTo(p[0], p[1] - 2);
+            ctx.lineTo(p[0] + 5, p[1] + 1);
+            ctx.lineTo(p[0] + 10, p[1] + 2);
+            ctx.lineTo(p[0] + 15, p[1] + 2);
+        }
+        ctx.stroke();
+    });
+    
+    // stroke grass
+    with_env(() => {
+        ctx.strokeStyle = "#b4a591";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (const e of grass) {
+            const p = unit(e);
+            ctx.moveTo(p[0] - 2, p[1] + 2);
+            ctx.lineTo(p[0] - 3, p[1] - 2);
+            ctx.moveTo(p[0] + 2, p[1] + 2);
+            ctx.lineTo(p[0] + 3, p[1] - 2);
+        }
+        ctx.stroke();
+    });
+    
+    // draw mountains
+    with_env(() => {
+        ctx.strokeStyle = "#514a41";
+        ctx.fillStyle = BG_C;
+        ctx.lineWidth = 1;
+        for (const e of mountains) {
+            const p = unit(e);
+            const s = (e[2] - 0.5) * 2 + 0.2;
+            ctx.beginPath();
+            ctx.moveTo(p[0] - 16 * s, p[1]);
+            ctx.lineTo(p[0], p[1] - 24 * s);
+            ctx.lineTo(p[0] + 16 * s, p[1]);
+            ctx.fill();
+            ctx.stroke();
+        }
     });
 };

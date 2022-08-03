@@ -4,7 +4,7 @@
 }
 
 .pd-cav {
-  background: #ffffff;
+/*   background: #ffffff; */
   position: absolute;
   top: var(--pos-y);
   left: var(--pos-x);

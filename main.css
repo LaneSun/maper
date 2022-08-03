@@ -41,29 +41,37 @@ body {
   border-top: none;
 }
 .head {
-  color: #666666;
+  color: #0088dd;
   font-size: 20px;
   font-weight: bold;
 }
 .title {
-  color: #666666;
-  font-size: 18px;
+  color: #555555;
+  font-size: 17px;
   margin-top: 8px;
+  font-weight: bold;
 }
 .textfield {
   margin-top: 8px;
   background: #fff;
   padding: 4px;
-  color: #666666;
+  color: #555555;
   outline: none;
   border-top: none;
   border-left: none;
   border-right: 1px solid #dddddd;
   border-bottom: 2px solid #e4e4e4;
+  font-family: monospace;
+  font-size: 13px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 .textfield:focus {
   outline: 1px solid #0088ff;
   border-color: #ffffff;
+}
+#t-export {
+  user-select: all;
 }
 .but {
   background: #ffffff;
@@ -87,7 +95,7 @@ body {
 .entry::before {
   content: attr(label);
   font-size: 14px;
-  color: #444444;
+  color: #666666;
   min-width: 10em;
   flex-shrink: 0;
 }
