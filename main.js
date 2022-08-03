@@ -155,54 +155,238 @@ const DEFAULT_SETS = {
     "crop-roughness": 0.3,
     "crop-sub-time": 6,
     "crop-seed": 0,
+    "data-labels": [{
+        type: "label",
+        data: ["阿米西提亚王国", 2845, 1647]
+    },{
+        type: "label",
+        data: ["伊格提希姆帝国", 1700, 1502]
+    },{
+        type: "label",
+        data: ["路格拉斯公国", 2065, 2732]
+    }],
     "data-sample-points": [{
         type: "point",
-        data: ["p1", 1000, 2000]
+        data: ["p1", 3125, 0]
     },{
         type: "point",
-        data: ["p2", 2000, 1000]
+        data: ["p2", 2565, 507]
     },{
         type: "point",
-        data: ["p3", 3000, 2000]
+        data: ["p3", 1730, 757]
     },{
         type: "point",
-        data: ["p4", 2000, 3000]
+        data: ["p4", 1065, 1717]
     },{
         type: "point",
-        data: ["p5", 1500, 1500]
+        data: ["p5", 0, 1992]
     },{
         type: "point",
-        data: ["p6", 2000, 2000]
+        data: ["plb", 0, 4000]
     },{
         type: "point",
-        data: ["p7", 1000, 3000]
+        data: ["p6", 2250, 4000]
+    },{
+        type: "point",
+        data: ["p7", 2860, 3167]
+    },{
+        type: "point",
+        data: ["p8", 2935, 2312]
+    },{
+        type: "point",
+        data: ["p9", 3535, 1822]
+    },{
+        type: "point",
+        data: ["p10", 4000, 2012]
+    },{
+        type: "point",
+        data: ["prt", 4000, 0]
+    },{
+        type: "point",
+        data: ["mes", 1355, 1362]
+    },{
+        type: "point",
+        data: ["me1", 1175, 2022]
+    },{
+        type: "point",
+        data: ["me2", 1295, 2417]
+    },{
+        type: "point",
+        data: ["me3", 1365, 2907]
+    },{
+        type: "point",
+        data: ["me4", 1585, 3267]
+    },{
+        type: "point",
+        data: ["me5", 2230, 3382]
+    },{
+        type: "point",
+        data: ["me6", 2660, 2947]
+    },{
+        type: "point",
+        data: ["me7", 2570, 1897]
+    },{
+        type: "point",
+        data: ["mee", 3390, 2042]
+    },{
+        type: "point",
+        data: ["mws", 825, 1547]
+    },{
+        type: "point",
+        data: ["mw1", 880, 2162]
+    },{
+        type: "point",
+        data: ["mw2", 1085, 2517]
+    },{
+        type: "point",
+        data: ["mw3", 1025, 3042]
+    },{
+        type: "point",
+        data: ["mw4", 1395, 3607]
+    },{
+        type: "point",
+        data: ["mw5", 2230, 3832]
+    },{
+        type: "point",
+        data: ["mw6", 3010, 3462]
+    },{
+        type: "point",
+        data: ["mw7", 3320, 2692]
+    },{
+        type: "point",
+        data: ["mwe", 3685, 2452]
+    },{
+        type: "point",
+        data: ["nb1-s", 1370, 2777]
+    },{
+        type: "point",
+        data: ["nb1-1", 1895, 1952]
+    },{
+        type: "point",
+        data: ["nb1-e", 2575, 2247]
+    },{
+        type: "point",
+        data: ["nb2-s", 1895, 1952]
+    },{
+        type: "point",
+        data: ["nb2-1", 2395, 1327]
+    },{
+        type: "point",
+        data: ["nb2-e", 2385, 647]
+    },{
+        type: "point",
+        data: ["nb3-s", 1160, 2427]
+    },{
+        type: "point",
+        data: ["nb3-e", 1215, 2617]
+    },{
+        type: "point",
+        data: ["nb4-s", 2435, 942]
+    },{
+        type: "point",
+        data: ["nb4-1", 3220, 1282]
+    },{
+        type: "point",
+        data: ["nb4-e", 3545, 1827]
     }],
     "data-sample-lines": [{
         type: "line",
-        id: "l1",
+        id: "l-mainland-lt",
         modifiers: [
-            ["RMDF", 0.5, 8, 1],
+            ["RMDF", 0.4, 7, 1],
         ],
-        data: ["p1", "p2", "p3", "p4", "p1"],
+        data: ["p1", "p2", "p3", "p4", "p5"],
     },{
         type: "line",
-        id: "l2",
+        id: "l-mainland-lb",
+        modifiers: [],
+        data: ["p5", "plb", "p6"],
+    },{
+        type: "line",
+        id: "l-mainland-rb",
         modifiers: [
-            ["RMDF", 0.3, 6, 2],
+            ["RMDF", 0.4, 7, 2],
         ],
-        data: ["p1", "p5", "p6", "p7", "p1"],
+        data: ["plb", "p6", "p7", "p8", "p9", "p10"],
+    },{
+        type: "line",
+        id: "l-mainland-rt",
+        modifiers: [],
+        data: ["p10", "prt", "p1"],
+    },{
+        type: "line",
+        id: "l-mountain-e",
+        modifiers: [
+            ["RMDF", 0.3, 5, 6],
+        ],
+        data: ["mes", "me1", "me2", "me3", "me4", "me5", "me6", "me7", "mee"],
+    },{
+        type: "line",
+        id: "l-mountain-w",
+        modifiers: [
+            ["RMDF", 0.3, 5, 6],
+        ],
+        data: ["mwe", "mw7", "mw6", "mw5", "mw4", "mw3", "mw2", "mw1", "mws"],
+    },{
+        type: "line",
+        id: "l-nb-1",
+        modifiers: [
+            ["RMDF", 0.3, 8, 19],
+        ],
+        data: ["nb1-s", "nb1-1", "nb1-e"],
+    },{
+        type: "line",
+        id: "l-nb-2",
+        modifiers: [
+            ["RMDF", 0.3, 8, 20],
+        ],
+        data: ["nb2-s", "nb2-1", "nb2-e"],
+    },{
+        type: "line",
+        id: "l-nb-3",
+        modifiers: [
+            ["RMDF", 0.3, 3, 5],
+        ],
+        data: ["nb3-s", "nb3-e"],
+    },{
+        type: "line",
+        id: "l-nb-4",
+        modifiers: [
+            ["RMDF", 0.3, 8, 11],
+        ],
+        data: ["nb4-s", "nb4-1", "nb4-e"],
     }],
     "data-lands": [{
         type: "land",
-        data: ["ld1", "l1"],
+        data: ["a-mainland", "l-mainland-lt", "l-mainland-lb", "l-mainland-rb", "l-mainland-rt"],
+    }],
+    "data-lines": [{
+        type: "line",
+        data: ["l-nb-1", "national-border", "l-nb-1"],
+    },{
+        type: "line",
+        data: ["l-nb-2", "national-border", "l-nb-2"],
+    },{
+        type: "line",
+        data: ["l-nb-3", "national-border", "l-nb-3"],
+    },{
+        type: "line",
+        data: ["l-nb-4", "national-border", "l-nb-4"],
     }],
     "data-fields": [{
         type: "field",
-        data: ["f-m1", "mountain", "l2"],
+        data: ["f-mountain", "mountain", "l-mountain-e", "l-mountain-w"],
     }],
 };
 
 const App = canvas => {
+    canvas.addEventListener("click", (e) => {
+        const rsl = sets["map-resolution"] / 1000;
+        const rect = canvas.getClientRects()[0];
+        const rx = e.clientX - rect.left;
+        const ry = e.clientY - rect.top;
+        console.log(`${rx / rsl}, ${ry / rsl}`);
+    });
     const context = canvas.getContext("2d");
     
     let sets = {};
@@ -234,9 +418,11 @@ const App = canvas => {
         id("i-crop-roughness").value = sets["crop-roughness"];
         id("i-crop-sub-time").value = sets["crop-sub-time"];
         id("i-crop-seed").value = sets["crop-seed"];
+        set_data("d-labels", sets["data-labels"]);
         set_data("d-sample-points", sets["data-sample-points"]);
         set_data("d-sample-lines", sets["data-sample-lines"]);
         set_data("d-lands", sets["data-lands"]);
+        set_data("d-lines", sets["data-lines"]);
         set_data("d-fields", sets["data-fields"]);
     };
     const triggers = {
@@ -306,11 +492,16 @@ const App = canvas => {
         const mw = sets["map-width"];
         const mh = sets["map-height"];
         const rsl = sets["map-resolution"] / 1000;
+        const labels = [];
         const spoints = new Map();
         const slines = new Map();
         const lands = new Map();
+        const lines = new Map();
         const fields = new Map();
         const unit = km2px_unit();
+        for (const obj of sets["data-labels"]) {
+            labels.push({label: obj.data[0], pos: obj.data.slice(1)});
+        }
         for (const obj of sets["data-sample-points"]) {
             spoints.set(obj.data[0], obj.data.slice(1));
         }
@@ -324,6 +515,10 @@ const App = canvas => {
         for (const obj of sets["data-lands"]) {
             const land = obj.data.slice(1).map(lid => slines.get(lid));
             lands.set(obj.data[0], land);
+        }
+        for (const obj of sets["data-lines"]) {
+            const line = obj.data.slice(2).map(lid => slines.get(lid));
+            lines.set(obj.data[0], {type: obj.data[1], data: line});
         }
         for (const obj of sets["data-fields"]) {
             const field = obj.data.slice(2).map(lid => slines.get(lid));
@@ -355,12 +550,12 @@ const App = canvas => {
             filter: p => col_land.collide(...p, 30, 30) < 0.01 ? p : null,
         });
         const grass = placer({
-            x_step: 12 / rsl,
-            y_step: 10 / rsl,
-            start_x: 80 / rsl,
-            start_y: 80 / rsl,
-            end_x: mw - 80 / rsl,
-            end_y: mh - 80 / rsl,
+            x_step: 36 / rsl,
+            y_step: 30 / rsl,
+            start_x: 0,
+            start_y: 0,
+            end_x: mw,
+            end_y: mh,
             x_offset: 0.3,
             y_offset: 0.4,
             seed: 1,
@@ -374,21 +569,21 @@ const App = canvas => {
             end_x: mw - 80 / rsl,
             end_y: mh - 80 / rsl,
             x_offset: 0.2,
-            y_offset: 0.3,
+            y_offset: 0.4,
             seed: 1,
             filter: p => {
-                const th = 0.5;
-                const c_land = col_land.collide(...p, 32, 24);
+                const th = 0.7;
+                const c_land = col_land.collide(...p, 32, 12);
                 if (c_land < th) return null;
-                const c_field = col_field.collide(...p, 32, 24);
+                const c_field = col_field.collide(...p, 32, 12);
                 if (c_field < th) return null;
                 const c = Math.min(c_land, c_field);
                 return [...p, c];
             },
-        });
+        }).sort((a, b) => a[1] - b[1]);
         col_land.destroy();
         col_field.destroy();
-        return {spoints, slines, lands, crop, waves, grass, mountains};
+        return {crop, waves, grass, labels, spoints, slines, lands, lines, mountains};
     };
 
     const draw = async () => {
@@ -396,9 +591,11 @@ const App = canvas => {
         shader({
             context,
             crop: data.crop,
-            lands: [...data.lands.values()],
             waves: data.waves,
             grass: data.grass,
+            labels: data.labels,
+            lands: [...data.lands.values()],
+            lines: [...data.lines.values()],
             mountains: data.mountains,
             unit: km2px_unit(),
         })

@@ -1,3 +1,5 @@
+import {modifiers} from "./modifiers.js";
+
 const trace_line = (ctx, unit, points) => {
     ctx.moveTo(...unit(points[0]));
     const ps = points.slice(1);
@@ -5,16 +7,17 @@ const trace_line = (ctx, unit, points) => {
         ctx.lineTo(...unit(p));
 };
 const trace_lines = (ctx, unit, lines) => {
-    for (const l of lines)
-        trace_line(ctx, unit, l);
+    const l = lines.flatMap(n => n);
+    trace_line(ctx, unit, l);
 };
 
 export const shader = ({
     crop,
-    lands,
-    borders,
     waves,
     grass,
+    labels,
+    lands,
+    lines,
     mountains,
     unit,
     context,
@@ -140,21 +143,68 @@ export const shader = ({
         }
         ctx.stroke();
     });
+
+    // stroke lines
+    for (const {type, data} of lines) {
+        with_env(() => {
+            switch (type) {
+                case "national-border":
+                    ctx.strokeStyle = "#6a6155";
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    for (const l of data)
+                        trace_line(ctx, unit, l);
+                    ctx.stroke();
+                    break;
+                default:
+                    debugger;
+            }
+        });
+    }
     
     // draw mountains
     with_env(() => {
-        ctx.strokeStyle = "#514a41";
         ctx.fillStyle = BG_C;
-        ctx.lineWidth = 1;
+        let seed = 0;
         for (const e of mountains) {
             const p = unit(e);
-            const s = (e[2] - 0.5) * 2 + 0.2;
+            const s = (e[2] - 0.5) * 2 + 0.4;
+            const line = [
+                [p[0] - 16 * s, p[1]],
+                [p[0], p[1] - 16 * s],
+                [p[0] + 16 * s, p[1]],
+            ];
+            const res = modifiers["RMDF"](line, 0.1, 3, seed);
             ctx.beginPath();
-            ctx.moveTo(p[0] - 16 * s, p[1]);
-            ctx.lineTo(p[0], p[1] - 24 * s);
-            ctx.lineTo(p[0] + 16 * s, p[1]);
+            trace_line(ctx, n => n, res);
             ctx.fill();
+            ctx.strokeStyle = BG_C;
+            ctx.lineWidth = 3;
             ctx.stroke();
+            ctx.strokeStyle = "#514a41";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.beginPath();
+            for (let x = p[0], y = p[1] - 13 * s; y < p[1]; x -= 1, y += 3) {
+                const h = p[1] - y;
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + h, y + h);
+            }
+            ctx.strokeStyle = "#b4a591";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            seed++;
+        }
+    });
+
+    // draw labels
+    with_env(() => {
+        ctx.textAlign = "center";
+        ctx.textAlign = "middle";
+        ctx.font = "italic 16px serif";
+        ctx.fillStyle = "#6a6155";
+        for (const {label, pos} of labels) {
+            ctx.fillText(label, ...unit(pos));
         }
     });
 };
