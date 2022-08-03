@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <title>Mapper</title>
+    <link type="text/css" rel="stylesheet" href="main.css"/>
+  </head>
+  <body>
+    <div class="panel">
+      <div class="section">
+        <div class="head">全局设置</div>
+        <div class="entry" label="地图东西横跨" suffix="km">
+          <input id="i-map-width" type="text" />
+        </div>
+        <div class="entry" label="地图南北横跨" suffix="km">
+          <input id="i-map-height" type="text" />
+        </div>
+        <div class="entry" label="渲染分辨率" suffix="px/10³km">
+          <input id="i-map-resolution" type="text" />
+        </div>
+        <div class="but" trigger="apply_global_sets">应用</div>
+      </div>
+      <div class="section">
+        <div class="head">渲染</div>
+        <label class="entry" label="显示参考点">
+          <input id="i-show-sample-points" type="checkbox" />
+        </label>
+        <label class="entry" label="显示比例尺">
+          <input id="i-show-scale" type="checkbox" />
+        </label>
+        <label class="entry" label="显示罗盘">
+          <input id="i-show-compass" type="checkbox" />
+        </label>
+        <label class="entry" label="风格化">
+          <input id="i-do-stylize" type="checkbox" />
+        </label>
+        <div class="but" trigger="apply_render_sets">应用</div>
+      </div>
+      <div class="section">
+        <div class="head">导入</div>
+        <textarea class="textfield"></textarea>
+        <div class="but" trigger="do_import">导入</div>
+      </div>
+      <div class="section">
+        <div class="head">导出</div>
+        <textarea class="textfield"></textarea>
+        <div class="but" trigger="do_export">导出</div>
+      </div>
+      <div class="section">
+        <div class="head">元数据</div>
+        <div class="title">参考点</div>
+        <div id="d-sample-points" class="databox"></div>
+        <div class="title">参考线</div>
+        <div id="d-sample-lines" class="databox"></div>
+        <div class="title">陆地</div>
+        <div id="d-lands" class="databox"></div>
+        <div class="title">线条</div>
+        <div class="databox"></div>
+        <div class="but" trigger="update_data">更新</div>
+      </div>
+    </div>
+    <div id="view"></div>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

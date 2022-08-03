@@ -1,0 +1,11 @@
+.pd-rt {
+  position: relative;
+  overflow: hidden;
+}
+
+.pd-cav {
+  background: #ffffff;
+  position: absolute;
+  top: var(--pos-y);
+  left: var(--pos-x);
+}

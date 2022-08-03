@@ -1,0 +1,177 @@
+@import "./m-sexpr-view/struct-editor.css";
+@import "./pad-canvas.css";
+
+html, body {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+body {
+  background: #ffffff;
+  display: flex;
+}
+#view {
+  flex-grow: 1;
+  min-width: 0;
+  min-height: 0;
+  background: #dddddd;
+}
+.panel {
+  width: 24em;
+  flex-shrink: 0;
+  flex-grow: 0;
+  background: #f4f4f4;
+  border-right: 1px solid #cccccc;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+.section {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: #bbbbbb dashed 1px;
+}
+.section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.head {
+  color: #666666;
+  font-size: 20px;
+  font-weight: bold;
+}
+.title {
+  color: #666666;
+  font-size: 18px;
+  margin-top: 8px;
+}
+.textfield {
+  margin-top: 8px;
+  background: #fff;
+  padding: 4px;
+  color: #666666;
+  outline: none;
+  border-top: none;
+  border-left: none;
+  border-right: 1px solid #dddddd;
+  border-bottom: 2px solid #e4e4e4;
+}
+.textfield:focus {
+  outline: 1px solid #0088ff;
+  border-color: #ffffff;
+}
+.but {
+  background: #ffffff;
+  color: #666666;
+  font-size: 14px;
+  text-align: center;
+  padding: 8px;
+  margin-top: 12px;
+  border-right: 1px solid #dddddd;
+  border-bottom: 2px solid #e4e4e4;
+  cursor: pointer;
+}
+.but:active {
+  background: #eeeeee;
+}
+.entry {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+}
+.entry::before {
+  content: attr(label);
+  font-size: 14px;
+  color: #444444;
+  min-width: 10em;
+  flex-shrink: 0;
+}
+.entry[suffix]::after {
+  content: attr(suffix);
+  margin-left: 4px;
+  min-width: 7em;
+  font-size: 14px;
+  color: #888888;
+  flex-shrink: 0;
+}
+.entry > input[type="text"] {
+  min-width: 0;
+  flex-grow: 1;
+  flex-shrink: 1;
+  background: #ffffff;
+  padding: 4px;
+  color: #666666;
+  outline: none;
+  border-top: none;
+  border-left: none;
+  border-right: 1px solid #dddddd;
+  border-bottom: 2px solid #e4e4e4;
+}
+.entry > input[type="text"]:focus {
+  border-bottom-color: #0088ff;
+  color: #444444;
+}
+.entry > input[type="checkbox"] {
+  appearance: none;
+  margin-right: auto;
+  width: 20px; height: 20px;
+  background: #ffffff;
+  outline: none;
+  border-top: none;
+  border-left: none;
+  border-right: 1px solid #dddddd;
+  border-bottom: 2px solid #e4e4e4;
+  overflow: visible;
+  position: relative;
+}
+.entry > input[type="checkbox"]:checked::after {
+  content: " ";
+  display: block;
+  width: 6px; height: 12px;
+  border-right: 2px solid #0088ff;
+  border-bottom: 2px solid #0088ff;
+  position: absolute;
+  bottom: calc(24% - 1px); right: 60%;
+  transform-origin: bottom right;
+  transform: rotate(45deg);
+}
+label.entry {
+  cursor: pointer;
+}
+.databox {
+  margin-top: 8px;
+  max-height: 200px;
+  background: #ffffff;
+  color: #666666;
+  border-top: none;
+  border-left: none;
+  border-right: 1px solid #dddddd;
+  border-bottom: 2px solid #e4e4e4;
+  overflow: auto;
+  min-width: auto !important;
+  min-height: 2em !important;
+}
+.databox:focus {
+  outline: 1px solid #0088ff;
+  border-color: #ffffff;
+}
+.st-rt {
+  --def-bg-c: #ffffff;
+  --def-fg-c: #444444;
+  --fg-c: #444444;
+  --fg-fd-c: #666666;
+  --struct-ln-c: #aaaaaa;
+  --sel-c: #99ccff;
+  --cursor-c: #0044dd;
+  --focus-ln-c: #0088ff;
+  --focus-bg-c: #0088ff11;
+  font-family: "Hack", monospace;
+  --size: 14px;
+  --lh: 18px;
+  padding-bottom: 1em;
+}
