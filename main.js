@@ -621,6 +621,7 @@ const App = (canvas, gui) => {
         }
     });
     canvas.addEventListener("mousemove", throttle(e => {
+        if (!sets["show-sample-points"]) return;
         const rect = canvas.getClientRects()[0];
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -635,6 +636,7 @@ const App = (canvas, gui) => {
         draw_gui([x, y]);
     }));
     canvas.addEventListener("mousedown", e => {
+        if (!sets["show-sample-points"]) return;
         if (e.button === 0) {
             const unit = km2px_unit();
             const rect = canvas.getClientRects()[0];
@@ -646,6 +648,7 @@ const App = (canvas, gui) => {
         }
     });
     canvas.addEventListener("mouseup", e => {
+        if (!sets["show-sample-points"]) return;
         if (e.button === 0) {
             const rect = canvas.getClientRects()[0];
             const x = e.clientX - rect.left;
@@ -681,6 +684,7 @@ const App = (canvas, gui) => {
         }
     });
     canvas.addEventListener("contextmenu", e => {
+        if (!sets["show-sample-points"]) return;
         if (e.button === 2) {
             const unit = km2px_unit();
             const rect = canvas.getClientRects()[0];
