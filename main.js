@@ -95,16 +95,16 @@ for (const elem of elem_databoxes) {
 const throttle = fn => {
     let waiting = null;
     let padding = null;
-    return () => {
+    return (...args) => {
         if (padding === null) {
             if (waiting === null) {
-                fn();
+                fn(...args);
                 waiting = true;
                 requestAnimationFrame(() => waiting = null);
             } else {
                 padding = true;
                 requestAnimationFrame(() => {
-                    fn();
+                    fn(...args);
                     padding = null;
                     waiting = true;
                     requestAnimationFrame(() => waiting = null);
@@ -249,6 +249,10 @@ const App = (canvas, gui) => {
         const r = sets["map-resolution"] / 1000;
         return ([x, y]) => [x * r, y * r];
     };
+    const px2km_unit = () => {
+        const r = sets["map-resolution"] / 1000;
+        return ([x, y]) => [x / r, y / r];
+    };
     const read_sets = s => {
         sets = s;
         sync_sets();
@@ -284,26 +288,29 @@ const App = (canvas, gui) => {
         set_data("d-lines", sets["data-lines"]);
         set_data("d-fields", sets["data-fields"]);
     };
-    const update_data = () => {
-        try {
-            sets["map-width"] = parseFloat(id("i-map-width").value ?? DEFAULT_SETS["map-width"]);
-            sets["map-height"] = parseFloat(id("i-map-height").value ?? DEFAULT_SETS["map-height"]);
-            sets["map-resolution"] = parseFloat(id("i-map-resolution").value ?? DEFAULT_SETS["map-resolution"]);
-            sets["show-sample-points"] = id("i-show-sample-points").checked;
+    const sync_data = () => {
+        sets["map-width"] = parseFloat(id("i-map-width").value ?? DEFAULT_SETS["map-width"]);
+        sets["map-height"] = parseFloat(id("i-map-height").value ?? DEFAULT_SETS["map-height"]);
+        sets["map-resolution"] = parseFloat(id("i-map-resolution").value ?? DEFAULT_SETS["map-resolution"]);
+        sets["show-sample-points"] = id("i-show-sample-points").checked;
 //             sets["show-scale"] = id("i-show-scale").checked;
 //             sets["show-compass"] = id("i-show-compass").checked;
 //             sets["do-stylize"] = id("i-do-stylize").checked;
-            sets["crop-border"] = parseInt(id("i-crop-border").value ?? DEFAULT_SETS["crop-border"]);
-            sets["crop-spoint-space"] = parseInt(id("i-crop-spoint-space").value ?? DEFAULT_SETS["crop-spoint-space"]);
-            sets["crop-roughness"] = parseFloat(id("i-crop-roughness").value ?? DEFAULT_SETS["crop-roughness"]);
-            sets["crop-sub-time"] = parseInt(id("i-crop-sub-time").value ?? DEFAULT_SETS["crop-sub-time"]);
-            sets["crop-seed"] = parseInt(id("i-crop-seed").value ?? DEFAULT_SETS["crop-seed"]);
-            sets["data-labels"] = get_data("d-labels");
-            sets["data-sample-points"] = get_data("d-sample-points");
-            sets["data-sample-lines"] = get_data("d-sample-lines");
-            sets["data-lands"] = get_data("d-lands");
-            sets["data-lines"] = get_data("d-lines");
-            sets["data-fields"] = get_data("d-fields");
+        sets["crop-border"] = parseInt(id("i-crop-border").value ?? DEFAULT_SETS["crop-border"]);
+        sets["crop-spoint-space"] = parseInt(id("i-crop-spoint-space").value ?? DEFAULT_SETS["crop-spoint-space"]);
+        sets["crop-roughness"] = parseFloat(id("i-crop-roughness").value ?? DEFAULT_SETS["crop-roughness"]);
+        sets["crop-sub-time"] = parseInt(id("i-crop-sub-time").value ?? DEFAULT_SETS["crop-sub-time"]);
+        sets["crop-seed"] = parseInt(id("i-crop-seed").value ?? DEFAULT_SETS["crop-seed"]);
+        sets["data-labels"] = get_data("d-labels");
+        sets["data-sample-points"] = get_data("d-sample-points");
+        sets["data-sample-lines"] = get_data("d-sample-lines");
+        sets["data-lands"] = get_data("d-lands");
+        sets["data-lines"] = get_data("d-lines");
+        sets["data-fields"] = get_data("d-fields");
+    };
+    const update_data = () => {
+        try {
+            sync_data();
             update_sets();
             store_temp();
         } catch(e) {
@@ -365,10 +372,12 @@ const App = (canvas, gui) => {
         const rsl = sets["map-resolution"] / 1000;
         const labels = [];
         const spoints = new Map();
+        const slines_raw = new Map();
         const slines = new Map();
         const lands = new Map();
         const lines = new Map();
         const fields = new Map();
+        const pre_areas = [];
         const unit = km2px_unit();
         for (const obj of sets["data-labels"]) {
             labels.push({label: obj.data[0], pos: obj.data.slice(1)});
@@ -377,6 +386,7 @@ const App = (canvas, gui) => {
             spoints.set(obj.data[0], obj.data.slice(1));
         }
         for (const obj of sets["data-sample-lines"]) {
+            slines_raw.set(obj.id, obj);
             let line = obj.data.map(pid => spoints.get(pid));
             for (const mdf of obj.modifiers) {
                 line = modifiers[mdf[0]](line, ...mdf.slice(1));
@@ -384,28 +394,30 @@ const App = (canvas, gui) => {
             slines.set(obj.id, line);
         }
         for (const obj of sets["data-lands"]) {
-            const land = obj.data.slice(1).map(lid => slines.get(lid));
+            const land = obj.data.slice(1).flatMap(lid => slines.get(lid));
             lands.set(obj.data[0], land);
+            pre_areas.push(obj.data.slice(1));
         }
         for (const obj of sets["data-lines"]) {
             const line = obj.data.slice(2).map(lid => slines.get(lid));
             lines.set(obj.data[0], {type: obj.data[1], data: line});
         }
         for (const obj of sets["data-fields"]) {
-            const field = obj.data.slice(2).map(lid => slines.get(lid));
+            const field = obj.data.slice(2).flatMap(lid => slines.get(lid));
             fields.set(obj.data[0], {type: obj.data[1], data: field});
+            pre_areas.push(obj.data.slice(2));
         }
         const crop = gen_crop();
         const col_land = await collider({
             width: rw,
             height: rh,
-            shapes: [...lands.values()].map(l => l.flatMap(e => e)),
+            shapes: [...lands.values()],
             unit,
         });
         const col_field = await collider({
             width: rw,
             height: rh,
-            shapes: [...fields.values()].map(l => l.data.flatMap(e => e)),
+            shapes: [...fields.values()].map(l => l.data),
             unit,
         });
         const waves = placer({
@@ -454,13 +466,31 @@ const App = (canvas, gui) => {
         }).sort((a, b) => a[1] - b[1]);
         col_land.destroy();
         col_field.destroy();
-        return {crop, waves, grass, labels, spoints, slines, lands, lines, mountains};
+        return {
+            crop,
+            waves,
+            grass,
+            labels,
+            spoints,
+            slines,
+            slines_raw,
+            lands,
+            lines,
+            mountains,
+            pre_areas,
+        };
     };
 
     let cache_spoints = new Map();
+    let cache_slines = new Map();
+    let cache_slines_raw = new Map();
+    let cache_pre_areas = [];
     const draw = async () => {
         const data = await calc_data();
         cache_spoints = data.spoints;
+        cache_slines = data.slines;
+        cache_slines_raw = data.slines_raw;
+        cache_pre_areas = data.pre_areas;
         draw_gui();
         shader({
             context,
@@ -475,23 +505,15 @@ const App = (canvas, gui) => {
         });
     };
     
+    let selected_p = null;
+    let need_update = false;
     const draw_gui = (mpos) => {
         if (!sets["show-sample-points"]) return;
         const unit = km2px_unit();
         const sp_radius = 3;
         gctx.lineWidth = 2;
-        gctx.strokeStyle = "#0088ff";
-        gctx.fillStyle = "#0088ff44";
+        gctx.strokeStyle = "#827769";
         gctx.clearRect(0, 0, gui.width, gui.height);
-        if (mpos) {
-            const p = pick_spoint(unit, ...mpos);
-            if (p) {
-                const [rx, ry] = unit(p[1]);
-                gctx.beginPath();
-                gctx.arc(rx, ry, 16, 0, 2 * Math.PI);
-                gctx.fill();
-            }
-        }
         for (const p of cache_spoints.values()) {
             const [rx, ry] = unit(p);
             gctx.beginPath();
@@ -501,17 +523,76 @@ const App = (canvas, gui) => {
             gctx.lineTo(rx - sp_radius, ry + sp_radius);
             gctx.stroke();
         }
+        if (mpos) {
+            const p = selected_p || check_spoint(unit, ...mpos);
+            if (p) {
+                const sareas = new Set();
+                for (const [id, obj] of cache_slines_raw) {
+                    if (obj.data.includes(p[0])) {
+                        cache_pre_areas.forEach((data, index) => {
+                            if (data.includes(id))
+                                sareas.add(index);
+                        });
+                        const rline = obj.data.map(pid => unit(cache_spoints.get(pid)));
+                        gctx.beginPath();
+                        gctx.moveTo(...rline[0]);
+                        for (const e of rline.slice(1))
+                            gctx.lineTo(...e);
+                        gctx.setLineDash([5, 5]);
+                        gctx.strokeStyle = "#0088ff88";
+                        gctx.stroke();
+                        gctx.setLineDash([]);
+                        if (need_update) {
+                            let line = obj.data.map(pid => cache_spoints.get(pid));
+                            for (const mdf of obj.modifiers) {
+                                line = modifiers[mdf[0]](line, ...mdf.slice(1));
+                            }
+                            cache_slines.set(id, line);
+                        }
+                        const sline = cache_slines.get(id);
+                        gctx.beginPath();
+                        gctx.moveTo(...unit(sline[0]));
+                        for (const e of sline.slice(1))
+                            gctx.lineTo(...unit(e));
+                        gctx.strokeStyle = "#0088ff";
+                        gctx.stroke();
+                    }
+                }
+                for (const area_i of sareas) {
+                    const area = cache_pre_areas[area_i].flatMap(lid => cache_slines.get(lid));
+                    gctx.beginPath();
+                    gctx.moveTo(...unit(area[0]));
+                    for (const e of area.slice(1))
+                        gctx.lineTo(...unit(e));
+                    gctx.fillStyle = "#0088ff22";
+                    gctx.fill();
+                }
+                const [rx, ry] = unit(p[1]);
+                gctx.beginPath();
+                gctx.arc(rx, ry, 16, 0, 2 * Math.PI);
+                gctx.fillStyle = "#0088ff44";
+                gctx.fill();
+                gctx.beginPath();
+                gctx.moveTo(rx - sp_radius, ry - sp_radius);
+                gctx.lineTo(rx + sp_radius, ry + sp_radius);
+                gctx.moveTo(rx + sp_radius, ry - sp_radius);
+                gctx.lineTo(rx - sp_radius, ry + sp_radius);
+                gctx.strokeStyle = "#0088ff";
+                gctx.stroke();
+            }
+        }
     };
     
-    const pick_spoint = (unit, x, y) => {
+    const check_spoint = (unit, x, y) => {
         let np = null;
         let ldd = Infinity;
-        for (const [id, p] of cache_spoints) {
+        for (const point of cache_spoints) {
+            const [id, p] = point;
             const [rx, ry] = unit(p);
             const dd = (x - rx) ** 2 + (y - ry) ** 2;
             if (dd < ldd) {
                 ldd = dd;
-                np = [id, p];
+                np = point;
             }
         }
         if (ldd < 256) return np;
@@ -539,11 +620,93 @@ const App = (canvas, gui) => {
             e.preventDefault();
         }
     });
-    canvas.addEventListener("mousemove", e => {
+    canvas.addEventListener("mousemove", throttle(e => {
         const rect = canvas.getClientRects()[0];
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+        if (selected_p) {
+            const unit = px2km_unit();
+            const [mx, my] = unit([e.movementX, e.movementY]);
+            const p = [selected_p[1][0] + mx, selected_p[1][1] + my];
+            selected_p[1] = p;
+            cache_spoints.set(selected_p[0], p);
+            need_update = true;
+        }
         draw_gui([x, y]);
+    }));
+    canvas.addEventListener("mousedown", e => {
+        if (e.button === 0) {
+            const unit = km2px_unit();
+            const rect = canvas.getClientRects()[0];
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const p = check_spoint(unit, x, y);
+            selected_p = p;
+            draw_gui([x, y]);
+        }
+    });
+    canvas.addEventListener("mouseup", e => {
+        if (e.button === 0) {
+            const rect = canvas.getClientRects()[0];
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            if (selected_p) {
+                const sel_p = selected_p;
+                selected_p = null;
+                draw_gui([x, y]);
+                const data = get_data("d-sample-points");
+                data.forEach(obj => {
+                    if (obj.data[0] === sel_p[0]) {
+                        obj.data[1] = sel_p[1][0];
+                        obj.data[2] = sel_p[1][1];
+                    }
+                });
+                set_data("d-sample-points", data);
+            } else {
+                const res = window.prompt(
+                    "Input an ID for the new Point",
+                    "p-" + (0|(Math.random() * 65536)).toString(16).padStart(4, '0'),
+                );
+                if (res) {
+                    sync_data();
+                    const unit = px2km_unit();
+                    sets["data-sample-points"].push({
+                        type: "point",
+                        data: [res, ...unit([x, y])]
+                    });
+                    sync_sets();
+                    update_data();
+                }
+            }
+        }
+    });
+    canvas.addEventListener("contextmenu", e => {
+        if (e.button === 2) {
+            const unit = km2px_unit();
+            const rect = canvas.getClientRects()[0];
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const p = check_spoint(unit, x, y);
+            if (p) {
+                const res = window.confirm("Confirm to delete the Point?");
+                if (res) {
+                    sync_data();
+                    let index = null;
+                    for (let i = 0; i < sets["data-sample-points"].length; i++) {
+                        const pt = sets["data-sample-points"][i];
+                        if (pt.data[0] === p[0]) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index !== null) sets["data-sample-points"].splice(index, 1);
+                    sync_sets();
+                    update_data();
+                }
+                e.preventDefault();
+                return false;
+            }
+        }
     });
 };
 

@@ -67,7 +67,7 @@ export const shader = ({
         ctx.lineCap = "round";
         ctx.beginPath();
         for (const land of lands)
-            trace_lines(ctx, unit, land);
+            trace_line(ctx, unit, land);
         ctx.globalCompositeOperation = "source-over";
         ctx.stroke();
     });
@@ -93,7 +93,7 @@ export const shader = ({
         ctx.fillStyle = BG_C;
         ctx.beginPath();
         for (const land of lands)
-            trace_lines(ctx, unit, land);
+            trace_line(ctx, unit, land);
         ctx.globalCompositeOperation = "source-over";
         ctx.fill();
     });
@@ -106,7 +106,7 @@ export const shader = ({
         ctx.lineCap = "bevel";
         ctx.beginPath();
         for (const land of lands)
-            trace_lines(ctx, unit, land);
+            trace_line(ctx, unit, land);
         ctx.globalCompositeOperation = "source-over";
         ctx.stroke();
     });

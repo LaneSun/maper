@@ -70,19 +70,23 @@ export const collider = async ({
         ctx.fill();
     }
     await wait_render();
+    const data = ctx.getImageData(0, 0, width, height);
+    const dataw = data.width;
     return {
         collide: (x, y, rx, ry) => {
             [x, y] = unit([x, y]);
-            const data = ctx.getImageData(
-                x - rx,
-                y - ry,
-                rx * 2,
-                ry * 2
-            );
-            const size = data.width * data.height;
+            x = 0|x;
+            y = 0|y;
+            const size = rx * ry * 4;
+            const x1 = x - rx;
+            const y1 = y - ry;
+            const x2 = x + rx;
+            const y2 = y + ry;
             let sum = 0;
-            for (let i = 0; i < size; i++) {
-                sum += data.data[i * 4] / 255;
+            for (let cx = x1; cx < x2; cx++) {
+                for (let cy = y1; cy < y2; cy++) {
+                    sum += data.data[(cy * dataw + cx) * 4] / 255;
+                }
             }
             const res = sum / size;
             return res;

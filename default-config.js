@@ -116,13 +116,10 @@ export const sets = {
         data: ["nb1-s", 1370, 2777]
     },{
         type: "point",
-        data: ["nb1-1", 1895, 1952]
+        data: ["nbm-1", 1895, 1952]
     },{
         type: "point",
         data: ["nb1-e", 2575, 2247]
-    },{
-        type: "point",
-        data: ["nb2-s", 1895, 1952]
     },{
         type: "point",
         data: ["nb2-1", 2395, 1327]
@@ -141,9 +138,6 @@ export const sets = {
     },{
         type: "point",
         data: ["nb4-1", 3220, 1282]
-    },{
-        type: "point",
-        data: ["nb4-e", 3545, 1827]
     }],
     "data-sample-lines": [{
         type: "sline",
@@ -163,7 +157,7 @@ export const sets = {
         modifiers: [
             ["RMDF", 0.4, 7, 2],
         ],
-        data: ["plb", "p6", "p7", "p8", "p9", "p10"],
+        data: ["p6", "p7", "p8", "p9", "p10"],
     },{
         type: "sline",
         id: "l-mainland-rt",
@@ -189,14 +183,14 @@ export const sets = {
         modifiers: [
             ["RMDF", 0.3, 8, 19],
         ],
-        data: ["nb1-s", "nb1-1", "nb1-e"],
+        data: ["nb1-s", "nbm-1", "nb1-e"],
     },{
         type: "sline",
         id: "l-nb-2",
         modifiers: [
             ["RMDF", 0.3, 8, 20],
         ],
-        data: ["nb2-s", "nb2-1", "nb2-e"],
+        data: ["nbm-1", "nb2-1", "nb2-e"],
     },{
         type: "sline",
         id: "l-nb-3",
@@ -210,7 +204,7 @@ export const sets = {
         modifiers: [
             ["RMDF", 0.3, 8, 11],
         ],
-        data: ["nb4-s", "nb4-1", "nb4-e"],
+        data: ["nb4-s", "nb4-1", "p9"],
     }],
     "data-lands": [{
         type: "land",
