@@ -6,7 +6,7 @@ import {modifiers} from "./modifiers.js";
 import {sets as DEFAULT_SETS} from "./default-config.js";
 
 const view = document.getElementById("view");
-const cav = create_pad(view);
+const [cav, gui] = create_pad(view);
 const elem_databoxes = [...document.querySelectorAll(".databox")];
 const prefix = type => "mp-" + type;
 const create_elem = (type, inner, ...classes) => {
@@ -233,7 +233,7 @@ const set_data = (i, data) => {
     elem.set_nodes(nodes);
 };
 
-const App = canvas => {
+const App = (canvas, gui) => {
     canvas.addEventListener("click", (e) => {
         const rsl = sets["map-resolution"] / 1000;
         const rect = canvas.getClientRects()[0];
@@ -242,6 +242,7 @@ const App = canvas => {
         console.log(`${rx / rsl}, ${ry / rsl}`);
     });
     const context = canvas.getContext("2d");
+    const gctx = gui.getContext("2d");
     
     let sets = {};
     const km2px_unit = () => {
@@ -268,9 +269,9 @@ const App = canvas => {
         id("i-map-height").value = sets["map-height"];
         id("i-map-resolution").value = sets["map-resolution"];
         id("i-show-sample-points").checked = sets["show-sample-points"];
-        id("i-show-scale").checked = sets["show-scale"];
-        id("i-show-compass").checked = sets["show-compass"];
-        id("i-do-stylize").checked = sets["do-stylize"];
+//         id("i-show-scale").checked = sets["show-scale"];
+//         id("i-show-compass").checked = sets["show-compass"];
+//         id("i-do-stylize").checked = sets["do-stylize"];
         id("i-crop-border").value = sets["crop-border"];
         id("i-crop-spoint-space").value = sets["crop-spoint-space"];
         id("i-crop-roughness").value = sets["crop-roughness"];
@@ -289,9 +290,9 @@ const App = canvas => {
             sets["map-height"] = parseFloat(id("i-map-height").value ?? DEFAULT_SETS["map-height"]);
             sets["map-resolution"] = parseFloat(id("i-map-resolution").value ?? DEFAULT_SETS["map-resolution"]);
             sets["show-sample-points"] = id("i-show-sample-points").checked;
-            sets["show-scale"] = id("i-show-scale").checked;
-            sets["show-compass"] = id("i-show-compass").checked;
-            sets["do-stylize"] = id("i-do-stylize").checked;
+//             sets["show-scale"] = id("i-show-scale").checked;
+//             sets["show-compass"] = id("i-show-compass").checked;
+//             sets["do-stylize"] = id("i-do-stylize").checked;
             sets["crop-border"] = parseInt(id("i-crop-border").value ?? DEFAULT_SETS["crop-border"]);
             sets["crop-spoint-space"] = parseInt(id("i-crop-spoint-space").value ?? DEFAULT_SETS["crop-spoint-space"]);
             sets["crop-roughness"] = parseFloat(id("i-crop-roughness").value ?? DEFAULT_SETS["crop-roughness"]);
@@ -456,8 +457,11 @@ const App = canvas => {
         return {crop, waves, grass, labels, spoints, slines, lands, lines, mountains};
     };
 
+    let cache_spoints = new Map();
     const draw = async () => {
         const data = await calc_data();
+        cache_spoints = data.spoints;
+        draw_gui();
         shader({
             context,
             crop: data.crop,
@@ -468,7 +472,49 @@ const App = canvas => {
             lines: [...data.lines.values()],
             mountains: data.mountains,
             unit: km2px_unit(),
-        })
+        });
+    };
+    
+    const draw_gui = (mpos) => {
+        if (!sets["show-sample-points"]) return;
+        const unit = km2px_unit();
+        const sp_radius = 3;
+        gctx.lineWidth = 2;
+        gctx.strokeStyle = "#0088ff";
+        gctx.fillStyle = "#0088ff44";
+        gctx.clearRect(0, 0, gui.width, gui.height);
+        if (mpos) {
+            const p = pick_spoint(unit, ...mpos);
+            if (p) {
+                const [rx, ry] = unit(p[1]);
+                gctx.beginPath();
+                gctx.arc(rx, ry, 16, 0, 2 * Math.PI);
+                gctx.fill();
+            }
+        }
+        for (const p of cache_spoints.values()) {
+            const [rx, ry] = unit(p);
+            gctx.beginPath();
+            gctx.moveTo(rx - sp_radius, ry - sp_radius);
+            gctx.lineTo(rx + sp_radius, ry + sp_radius);
+            gctx.moveTo(rx + sp_radius, ry - sp_radius);
+            gctx.lineTo(rx - sp_radius, ry + sp_radius);
+            gctx.stroke();
+        }
+    };
+    
+    const pick_spoint = (unit, x, y) => {
+        let np = null;
+        let ldd = Infinity;
+        for (const [id, p] of cache_spoints) {
+            const [rx, ry] = unit(p);
+            const dd = (x - rx) ** 2 + (y - ry) ** 2;
+            if (dd < ldd) {
+                ldd = dd;
+                np = [id, p];
+            }
+        }
+        if (ldd < 256) return np;
     };
     
     const sketch_source = localStorage.getItem("tool::mapper::sketch");
@@ -493,6 +539,12 @@ const App = canvas => {
             e.preventDefault();
         }
     });
+    canvas.addEventListener("mousemove", e => {
+        const rect = canvas.getClientRects()[0];
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        draw_gui([x, y]);
+    });
 };
 
-App(cav);
+App(cav, gui);

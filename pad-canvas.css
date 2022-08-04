@@ -4,8 +4,14 @@
 }
 
 .pd-cav {
-/*   background: #ffffff; */
   position: absolute;
   top: var(--pos-y);
   left: var(--pos-x);
+}
+
+.pd-gui {
+  position: absolute;
+  top: var(--pos-y);
+  left: var(--pos-x);
+  pointer-events: none;
 }
