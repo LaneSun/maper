@@ -18,7 +18,6 @@
         <label class="entry" label="渲染分辨率" suffix="px/10³km">
           <input id="i-map-resolution" type="text" />
         </label>
-        <div class="but trigger" trigger="apply_global_sets">应用</div>
       </div>
       <div class="section">
         <div class="head">渲染</div>
@@ -50,11 +49,10 @@
         <label class="entry" label="裁剪细分种子">
           <input id="i-crop-seed" type="text" />
         </label>
-        <div class="but trigger" trigger="apply_render_sets">应用</div>
       </div>
       <div class="section">
         <div class="head">导入</div>
-        <textarea id="t-import" class="textfield"></textarea>
+        <textarea id="t-import" class="textfield" spellcheck="false"></textarea>
         <div class="but trigger" trigger="do_import">导入</div>
       </div>
       <div class="section">
@@ -76,7 +74,9 @@
         <div id="d-lines" class="databox"></div>
         <div class="title">区域</div>
         <div id="d-fields" class="databox"></div>
-        <div class="but trigger" trigger="update_data">更新</div>
+      </div>
+      <div class="section">
+        <div class="but trigger" trigger="update_data">更新 Ctrl-s</div>
       </div>
     </div>
     <div id="view"></div>

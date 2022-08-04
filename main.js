@@ -3,10 +3,89 @@ import {create_pad} from "./pad-canvas.js";
 import {shader} from "./shader.js";
 import {placer, collider} from "./utils.js";
 import {modifiers} from "./modifiers.js";
+import {sets as DEFAULT_SETS} from "./default-config.js";
 
 const view = document.getElementById("view");
 const cav = create_pad(view);
 const elem_databoxes = [...document.querySelectorAll(".databox")];
+const prefix = type => "mp-" + type;
+const create_elem = (type, inner, ...classes) => {
+    const elem = document.createElement(type);
+    if (typeof inner === "string")
+        elem.textContent = inner;
+    else
+        elem.append(...inner);
+    elem.classList.add(...classes);
+    return elem;
+};
+const sexpr_view_cont = ed => {
+    return {
+        preview: {
+            "label": node => {
+                const n = normalize(node);
+                const root = ed.pre_struct_create({
+                    classes: [prefix("label")],
+                });
+                const e_text = create_elem("div", JSON.parse(n[2]), "i-text");
+                const e_pos_x = create_elem("div", n[3], "i-pos");
+                e_pos_x.setAttribute("axis", "X");
+                const e_pos_y = create_elem("div", n[4], "i-pos");
+                e_pos_y.setAttribute("axis", "Y");
+                root.append(e_text, e_pos_x, e_pos_y);
+                return root;
+            },
+            "point": node => {
+                const n = normalize(node);
+                const root = ed.pre_struct_create({
+                    classes: [prefix("point")],
+                });
+                const e_id = create_elem("div", JSON.parse(n[2]), "i-id");
+                const e_pos_x = create_elem("div", n[3], "i-pos");
+                e_pos_x.setAttribute("axis", "X");
+                const e_pos_y = create_elem("div", n[4], "i-pos");
+                e_pos_y.setAttribute("axis", "Y");
+                root.append(e_id, e_pos_x, e_pos_y);
+                return root;
+            },
+            "sline": node => {
+                const n = normalize(node);
+                const id = JSON.parse(n[2][2]);
+                const mods = n[3].slice(2).map(e => ({
+                    type: JSON.parse(e[1]),
+                    args: e.slice(2).map(i => JSON.parse(i)),
+                }));
+                const points = n.slice(4).map(i => JSON.parse(i));
+                const root = ed.pre_struct_create({
+                    classes: [prefix("sline")],
+                });
+                const e_id = create_elem("div", id, "i-id");
+                const e_mod_entries = mods
+                    .map(m => {
+                        const elem = create_elem("div", "", "i-entry");
+                        elem.setAttribute("type", m.type);
+                        elem.setAttribute("args", m.args.map(r => JSON.stringify(r)).join(', '));
+                        return elem;
+                    });
+                const e_mod_box = create_elem("div", e_mod_entries, "i-modbox");
+                const e_pts = create_elem("div", points.join(", "), "i-pts");
+                root.append(e_id, e_mod_box, e_pts);
+                return root;
+            },
+            "land": node => {
+                const n = normalize(node);
+                const id = JSON.parse(n[2]);
+                const lines = n.slice(3).map(i => JSON.parse(i));
+                const root = ed.pre_struct_create({
+                    classes: [prefix("land")],
+                });
+                const e_id = create_elem("div", id, "i-id");
+                const e_lis = create_elem("div", lines.join(", "), "i-lis");
+                root.append(e_id, e_lis);
+                return root;
+            },
+        },
+    };
+};
 for (const elem of elem_databoxes) {
     const e = create_view("", () => ({}));
     e.classList.add("databox");
@@ -35,37 +114,49 @@ const throttle = fn => {
     };
 };
 const id = i => document.getElementById(i);
-const normalize = stream => {
-    const res = [];
+const str_is_token = s => {
+    return !str_is_whitespace(s);
+};
+const str_is_whitespace = s => {
+    return /[\u0009\u000B\u000C\u0020\u00A0\u000A\u000D\u2028\u2029]+/.test(s);
+};
+const normalize = node => {
+    if (typeof node !== "object") return null;
+    const res = [node[0]];
     let lf = null;
-    for (const n of stream) {
+    const body = node.slice(1);
+    for (const n of body) {
         if (lf === 't') {
             if (typeof(n) === "string") {
                 if (str_is_token(n))
                     res[res.length - 1] += n;
-                else {
-                    res.push(n);
+                else
                     lf = 'w';
-                }
             } else {
-                res.push(n);
+                res.push(normalize(n));
                 lf = null;
             }
         } else if (lf === 'w') {
             if (typeof(n) === "string") {
-                if (str_is_whitespace(n))
-                    res[res.length - 1] += n;
-                else {
+                if (str_is_token(n)) {
                     res.push(n);
                     lf = 't';
                 }
             } else {
-                res.push(n);
+                res.push(normalize(n));
                 lf = null;
             }
         } else {
-            res.push(typeof n === "object" ? normalize(n) : n);
-            lf = typeof(n) === "string" ? (str_is_whitespace(n) ? 'w' : 't') : null;
+            if (typeof(n) === "string") {
+                if (str_is_token(n)) {
+                    res.push(n);
+                    lf = 't';
+                } else
+                    lf = 'w';
+            } else {
+                res.push(normalize(n));
+                lf = null;
+            }
         }
     }
     return res;
@@ -85,11 +176,11 @@ const node2data = node => {
             for (const n of body) {
                 if (typeof n === "object") {
                     if (n[0] === "vec")
-                        data[n[1]] = n.slice(1).map(node2data);
+                        data[n[1]] = n.slice(2).map(node2data);
                     else
                         data[n[1]] = node2data(n[2]);
                 } else {
-                    res_data.push(n);
+                    res_data.push(node2data(n));
                 }
             }
             if (res_data.length)
@@ -132,7 +223,7 @@ const data2node = data => {
 };
 const get_data = i => {
     const elem = id(i);
-    const nodes = normalize(elem.get_nodes());
+    const nodes = elem.get_nodes().map(normalize).filter(n => n);
     const data = nodes.map(node2data);
     return data;
 };
@@ -140,243 +231,6 @@ const set_data = (i, data) => {
     const elem = id(i);
     const nodes = data.flatMap(d => ['\n' ,data2node(d)]).slice(1);
     elem.set_nodes(nodes);
-};
-
-const DEFAULT_SETS = {
-    "map-width": 4000,
-    "map-height": 4000,
-    "map-resolution": 200,
-    "show-sample-points": true,
-    "show-scale": true,
-    "show-compass": true,
-    "do-stylize": true,
-    "crop-border": 20,
-    "crop-spoint-space": 100,
-    "crop-roughness": 0.3,
-    "crop-sub-time": 6,
-    "crop-seed": 0,
-    "data-labels": [{
-        type: "label",
-        data: ["阿米西提亚王国", 2845, 1647]
-    },{
-        type: "label",
-        data: ["伊格提希姆帝国", 1700, 1502]
-    },{
-        type: "label",
-        data: ["路格拉斯公国", 2065, 2732]
-    }],
-    "data-sample-points": [{
-        type: "point",
-        data: ["p1", 3125, 0]
-    },{
-        type: "point",
-        data: ["p2", 2565, 507]
-    },{
-        type: "point",
-        data: ["p3", 1730, 757]
-    },{
-        type: "point",
-        data: ["p4", 1065, 1717]
-    },{
-        type: "point",
-        data: ["p5", 0, 1992]
-    },{
-        type: "point",
-        data: ["plb", 0, 4000]
-    },{
-        type: "point",
-        data: ["p6", 2250, 4000]
-    },{
-        type: "point",
-        data: ["p7", 2860, 3167]
-    },{
-        type: "point",
-        data: ["p8", 2935, 2312]
-    },{
-        type: "point",
-        data: ["p9", 3535, 1822]
-    },{
-        type: "point",
-        data: ["p10", 4000, 2012]
-    },{
-        type: "point",
-        data: ["prt", 4000, 0]
-    },{
-        type: "point",
-        data: ["mes", 1355, 1362]
-    },{
-        type: "point",
-        data: ["me1", 1175, 2022]
-    },{
-        type: "point",
-        data: ["me2", 1295, 2417]
-    },{
-        type: "point",
-        data: ["me3", 1365, 2907]
-    },{
-        type: "point",
-        data: ["me4", 1585, 3267]
-    },{
-        type: "point",
-        data: ["me5", 2230, 3382]
-    },{
-        type: "point",
-        data: ["me6", 2660, 2947]
-    },{
-        type: "point",
-        data: ["me7", 2570, 1897]
-    },{
-        type: "point",
-        data: ["mee", 3390, 2042]
-    },{
-        type: "point",
-        data: ["mws", 825, 1547]
-    },{
-        type: "point",
-        data: ["mw1", 880, 2162]
-    },{
-        type: "point",
-        data: ["mw2", 1085, 2517]
-    },{
-        type: "point",
-        data: ["mw3", 1025, 3042]
-    },{
-        type: "point",
-        data: ["mw4", 1395, 3607]
-    },{
-        type: "point",
-        data: ["mw5", 2230, 3832]
-    },{
-        type: "point",
-        data: ["mw6", 3010, 3462]
-    },{
-        type: "point",
-        data: ["mw7", 3320, 2692]
-    },{
-        type: "point",
-        data: ["mwe", 3685, 2452]
-    },{
-        type: "point",
-        data: ["nb1-s", 1370, 2777]
-    },{
-        type: "point",
-        data: ["nb1-1", 1895, 1952]
-    },{
-        type: "point",
-        data: ["nb1-e", 2575, 2247]
-    },{
-        type: "point",
-        data: ["nb2-s", 1895, 1952]
-    },{
-        type: "point",
-        data: ["nb2-1", 2395, 1327]
-    },{
-        type: "point",
-        data: ["nb2-e", 2385, 647]
-    },{
-        type: "point",
-        data: ["nb3-s", 1160, 2427]
-    },{
-        type: "point",
-        data: ["nb3-e", 1215, 2617]
-    },{
-        type: "point",
-        data: ["nb4-s", 2435, 942]
-    },{
-        type: "point",
-        data: ["nb4-1", 3220, 1282]
-    },{
-        type: "point",
-        data: ["nb4-e", 3545, 1827]
-    }],
-    "data-sample-lines": [{
-        type: "line",
-        id: "l-mainland-lt",
-        modifiers: [
-            ["RMDF", 0.4, 7, 1],
-        ],
-        data: ["p1", "p2", "p3", "p4", "p5"],
-    },{
-        type: "line",
-        id: "l-mainland-lb",
-        modifiers: [],
-        data: ["p5", "plb", "p6"],
-    },{
-        type: "line",
-        id: "l-mainland-rb",
-        modifiers: [
-            ["RMDF", 0.4, 7, 2],
-        ],
-        data: ["plb", "p6", "p7", "p8", "p9", "p10"],
-    },{
-        type: "line",
-        id: "l-mainland-rt",
-        modifiers: [],
-        data: ["p10", "prt", "p1"],
-    },{
-        type: "line",
-        id: "l-mountain-e",
-        modifiers: [
-            ["RMDF", 0.3, 5, 6],
-        ],
-        data: ["mes", "me1", "me2", "me3", "me4", "me5", "me6", "me7", "mee"],
-    },{
-        type: "line",
-        id: "l-mountain-w",
-        modifiers: [
-            ["RMDF", 0.3, 5, 6],
-        ],
-        data: ["mwe", "mw7", "mw6", "mw5", "mw4", "mw3", "mw2", "mw1", "mws"],
-    },{
-        type: "line",
-        id: "l-nb-1",
-        modifiers: [
-            ["RMDF", 0.3, 8, 19],
-        ],
-        data: ["nb1-s", "nb1-1", "nb1-e"],
-    },{
-        type: "line",
-        id: "l-nb-2",
-        modifiers: [
-            ["RMDF", 0.3, 8, 20],
-        ],
-        data: ["nb2-s", "nb2-1", "nb2-e"],
-    },{
-        type: "line",
-        id: "l-nb-3",
-        modifiers: [
-            ["RMDF", 0.3, 3, 5],
-        ],
-        data: ["nb3-s", "nb3-e"],
-    },{
-        type: "line",
-        id: "l-nb-4",
-        modifiers: [
-            ["RMDF", 0.3, 8, 11],
-        ],
-        data: ["nb4-s", "nb4-1", "nb4-e"],
-    }],
-    "data-lands": [{
-        type: "land",
-        data: ["a-mainland", "l-mainland-lt", "l-mainland-lb", "l-mainland-rb", "l-mainland-rt"],
-    }],
-    "data-lines": [{
-        type: "line",
-        data: ["l-nb-1", "national-border", "l-nb-1"],
-    },{
-        type: "line",
-        data: ["l-nb-2", "national-border", "l-nb-2"],
-    },{
-        type: "line",
-        data: ["l-nb-3", "national-border", "l-nb-3"],
-    },{
-        type: "line",
-        data: ["l-nb-4", "national-border", "l-nb-4"],
-    }],
-    "data-fields": [{
-        type: "field",
-        data: ["f-mountain", "mountain", "l-mountain-e", "l-mountain-w"],
-    }],
 };
 
 const App = canvas => {
@@ -405,6 +259,10 @@ const App = canvas => {
         canvas.set_size(rw, rh);
         draw();
     };
+    const store_temp = () => {
+        const source = JSON.stringify(sets);
+        localStorage.setItem("tool::mapper::sketch", source);
+    };
     const sync_sets = () => {
         id("i-map-width").value = sets["map-width"];
         id("i-map-height").value = sets["map-height"];
@@ -425,33 +283,33 @@ const App = canvas => {
         set_data("d-lines", sets["data-lines"]);
         set_data("d-fields", sets["data-fields"]);
     };
+    const update_data = () => {
+        try {
+            sets["map-width"] = parseFloat(id("i-map-width").value ?? DEFAULT_SETS["map-width"]);
+            sets["map-height"] = parseFloat(id("i-map-height").value ?? DEFAULT_SETS["map-height"]);
+            sets["map-resolution"] = parseFloat(id("i-map-resolution").value ?? DEFAULT_SETS["map-resolution"]);
+            sets["show-sample-points"] = id("i-show-sample-points").checked;
+            sets["show-scale"] = id("i-show-scale").checked;
+            sets["show-compass"] = id("i-show-compass").checked;
+            sets["do-stylize"] = id("i-do-stylize").checked;
+            sets["crop-border"] = parseInt(id("i-crop-border").value ?? DEFAULT_SETS["crop-border"]);
+            sets["crop-spoint-space"] = parseInt(id("i-crop-spoint-space").value ?? DEFAULT_SETS["crop-spoint-space"]);
+            sets["crop-roughness"] = parseFloat(id("i-crop-roughness").value ?? DEFAULT_SETS["crop-roughness"]);
+            sets["crop-sub-time"] = parseInt(id("i-crop-sub-time").value ?? DEFAULT_SETS["crop-sub-time"]);
+            sets["crop-seed"] = parseInt(id("i-crop-seed").value ?? DEFAULT_SETS["crop-seed"]);
+            sets["data-labels"] = get_data("d-labels");
+            sets["data-sample-points"] = get_data("d-sample-points");
+            sets["data-sample-lines"] = get_data("d-sample-lines");
+            sets["data-lands"] = get_data("d-lands");
+            sets["data-lines"] = get_data("d-lines");
+            sets["data-fields"] = get_data("d-fields");
+            update_sets();
+            store_temp();
+        } catch(e) {
+            alert(`[CRITICAL] error: ${e.toString()}`);
+        }
+    };
     const triggers = {
-        "apply_global_sets": () => {
-            try {
-                sets["map-width"] = parseFloat(id("i-map-width").value ?? DEFAULT_SETS["map-width"]);
-                sets["map-height"] = parseFloat(id("i-map-height").value ?? DEFAULT_SETS["map-height"]);
-                sets["map-resolution"] = parseFloat(id("i-map-resolution").value ?? DEFAULT_SETS["map-resolution"]);
-                update_sets();
-            } catch(e) {
-                alert(`[CRITICAL] error: ${e.toString()}`);
-            }
-        },
-        "apply_render_sets": () => {
-            try {
-                sets["show-sample-points"] = id("i-show-sample-points").checked;
-                sets["show-scale"] = id("i-show-scale").checked;
-                sets["show-compass"] = id("i-show-compass").checked;
-                sets["do-stylize"] = id("i-do-stylize").checked;
-                sets["crop-border"] = parseInt(id("i-crop-border").value ?? DEFAULT_SETS["crop-border"]);
-                sets["crop-spoint-space"] = parseInt(id("i-crop-spoint-space").value ?? DEFAULT_SETS["crop-spoint-space"]);
-                sets["crop-roughness"] = parseFloat(id("i-crop-roughness").value ?? DEFAULT_SETS["crop-roughness"]);
-                sets["crop-sub-time"] = parseInt(id("i-crop-sub-time").value ?? DEFAULT_SETS["crop-sub-time"]);
-                sets["crop-seed"] = parseInt(id("i-crop-seed").value ?? DEFAULT_SETS["crop-seed"]);
-                update_sets();
-            } catch(e) {
-                alert(`[CRITICAL] error: ${e.toString()}`);
-            }
-        },
         "do_export": () => {
             try {
                 const source = JSON.stringify(sets);
@@ -460,6 +318,18 @@ const App = canvas => {
                 alert(`[CRITICAL] error: ${e.toString()}`);
             }
         },
+        "do_import": () => {
+            try {
+                const data = JSON.parse(id("t-import").value);
+                sets = data;
+                sync_sets();
+                update_sets();
+                store_temp();
+            } catch(e) {
+                alert(`[CRITICAL] error: ${e.toString()}`);
+            }
+        },
+        "update_data": update_data,
     };
     
     const gen_crop = () => {
@@ -601,18 +471,28 @@ const App = canvas => {
         })
     };
     
-    read_sets(DEFAULT_SETS);
-    
+    const sketch_source = localStorage.getItem("tool::mapper::sketch");
+    if (sketch_source)
+        try {
+            read_sets(JSON.parse(sketch_source));
+        } catch (e) {
+            read_sets(DEFAULT_SETS);
+        }
+    else
+        read_sets(DEFAULT_SETS);
     const elem_triggers = [...document.querySelectorAll(".trigger")];
     for (const elem of elem_triggers) {
         const trigger = triggers[elem.getAttribute("trigger")];
         if (trigger)
             elem.addEventListener("click", trigger);
     }
-
-    return {
-        redraw: draw
-    };
+    
+    window.addEventListener("keydown", e => {
+        if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+            update_data();
+            e.preventDefault();
+        }
+    });
 };
 
-const app = App(cav);
+App(cav);
