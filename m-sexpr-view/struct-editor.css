@@ -1,0 +1,245 @@
+@media (prefers-color-scheme: light) {
+  .st-rt {
+    --def-bg-c: #ffffff;
+    --def-fg-c: #444444;
+    --fg-c: #444444;
+    --fg-fd-c: #888888;
+    --struct-ln-c: #aaaaaa;
+    --sel-c: #99ccff;
+    --cursor-c: #0044dd;
+    --focus-ln-c: #0088ff;
+    --focus-bg-c: #0088ff11;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .st-rt {
+    --def-bg-c: #111111;
+    --def-fg-c: #cccccc;
+    --fg-c: #cccccc;
+    --fg-fd-c: #888888;
+    --struct-ln-c: #333a3a;
+    --sel-c: #004466;
+    --cursor-c: #0088ff;
+    --focus-ln-c: #0088ff;
+    --focus-bg-c: #0088ff22;
+  }
+}
+
+.st-rt {
+  position: relative;
+  padding: 8px;
+  white-space: pre;
+  font-family: monospace;
+  user-select: auto;
+  cursor: text;
+  caret-color: transparent;
+  font-size: var(--size);
+  line-height: var(--lh);
+  color: var(--def-fg-c);
+  background: var(--def-bg-c);
+  min-height: fit-content;
+  min-width: fit-content;
+  contain: content;
+  --size: 14px;
+  --lh: 16px;
+  --cursor-x: 0;
+  --cursor-y: 0;
+  --cursor-h: 0;
+  --t-fg-c: var(--fg-fd-c);
+}
+
+.st-rt:focus {
+  outline: none;
+}
+
+/* .st-elem {
+  transition: all 150ms;
+} */
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.st-rt:focus::after {
+  contain: strict;
+  content: " ";
+  position: absolute;
+  width: 2px;
+  background: var(--cursor-c);
+  left: calc(var(--cursor-x) - 1px);
+  top: calc(var(--cursor-y) - 1px);
+  height: calc(var(--cursor-h, 1lh) + 2px);
+  pointer-events: none;
+  animation-duration: 1s;
+  animation-name: blink;
+  animation-timing-function: step-end;
+  animation-iteration-count: infinite;
+  z-index: 2;
+}
+
+.st-rt.st-anim-clear::after {
+  animation: none;
+}
+
+.st-t::selection, .st-w::selection, .st-l::selection {
+  display: none;
+}
+
+.st-b {
+  display: inline-block;
+  --t-struct-ln-c: var(--struct-ln-c);
+  contain: content;
+}
+
+.st-s {
+  display: inline;
+}
+
+.st-h {
+  display: none;
+}
+
+.st-exp, .st-vec {
+  position: relative;
+  padding: 0 1ch;
+  margin: 0;
+  vertical-align: top;
+  min-height: var(--lh);
+}
+
+.st-ext {
+  vertical-align: baseline;
+  line-height: normal;
+}
+
+/* .st-hover {
+  background: #f4f4f4;
+} */
+
+.st-focus.st-b {
+/*   outline: var(--focus-ln-c) solid 1px; */
+  z-index: 1;
+  position: relative;
+  --t-struct-ln-c: var(--focus-ln-c);
+}
+
+.st-focus.st-b > .st-b {
+  --t-struct-ln-c: var(--fg-c);
+}
+
+.st-focus.st-b > .st-t:not(.st-select),
+.st-focus.st-b > .st-s:not(.st-select){
+  --t-fg-c: var(--fg-c);
+}
+
+.st-focus.st-s {
+  border-bottom: var(--focus-ln-c) solid 1px;
+  background: var(--focus-bg-c);
+  z-index: 1;
+  position: relative;
+  --t-fg-c: var(--fg-c);
+}
+
+.st-select {
+  background: var(--sel-c) !important;
+  border-color: var(--sel-c) !important;
+  border-radius: 0 !important;
+  --t-fg-c: var(--fg-c);
+}
+
+.st-select.st-b {
+  --struct-ln-c: var(--fg-c);
+}
+
+.st-select .st-e:not(.st-t, .st-w, .st-l) {
+  background: var(--sel-c) !important;
+}
+
+.st-exp::before, .st-vec::before,
+.st-exp::after, .st-vec::after {
+  content: " ";
+  position: absolute;
+  pointer-events: none;
+}
+
+.st-exp::before, .st-exp::after {
+  top: min(calc(var(--lh) / 2 - 2px), calc(100% - var(--lh) + 1px));
+  bottom: min(calc(var(--lh) / 2 - 2px), calc(100% - var(--lh) + 1px));
+  width: 3px;
+  border-top: 2px solid var(--t-struct-ln-c);
+  border-bottom: 2px solid var(--t-struct-ln-c);
+}
+
+.st-exp::before {
+  border-radius: 6px 0 0 6px;
+}
+
+.st-exp::after {
+  border-radius: 0 6px 6px 0;
+}
+
+.st-vec::before, .st-vec::after {
+  height: calc(100% - 6px);
+  top: 1px;
+  border-radius: 0;
+  width: 3px;
+  border-top: 2px solid var(--t-struct-ln-c);
+  border-bottom: 2px solid var(--t-struct-ln-c);
+}
+
+.st-exp::before, .st-vec::before {
+  left: 0.3ch;
+  border-left: 2px solid var(--t-struct-ln-c);
+}
+
+.st-exp::after, .st-vec::after {
+  right: 0.3ch;
+  border-right: 2px solid var(--t-struct-ln-c);
+}
+
+.st-qt {
+  vertical-align: baseline;
+  min-height: var(--lh);
+}
+
+.st-qt::before, .st-qt::after {
+  pointer-events: none;
+  content: "\"";
+  font-weight: bold;
+  color: var(--t-fg-c);
+}
+
+.st-t, .st-w, .st-l {
+  display: inline;
+}
+
+.st-t {
+  color: var(--t-fg-c);
+}
+
+.st-l::before, .st-l::after {
+  position: absolute;
+  color: var(--cursor-c);
+  line-height: var(--lh);
+  pointer-events: none;
+}
+
+.st-select.st-l::before, .st-select.st-l::after {
+  z-index: 2;
+}
+
+.st-select.st-l::before {
+  content: "↵";
+}
+
+.st-select.st-l::after {
+  background: var(--sel-c);
+  content: " ";
+  width: 2px;
+}

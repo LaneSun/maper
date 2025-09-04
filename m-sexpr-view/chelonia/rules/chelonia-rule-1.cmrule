@@ -1,0 +1,46 @@
+Whitespace {
+    |<[\u0009\u000B\u000C\u0020\u00A0\u000A\u000D\u2028\u2029]>+|
+}
+
+Token {
+    |<[a-zA-Z_\-~:\.]>+|
+}
+
+Number {
+    |<[0-9]>+|
+}
+
+Regexp {
+    |"<" Body ">"|
+    Body {
+        |(<[^\>\\]> | _BackslashSequence)+|
+        _BackslashSequence {
+            |"\\" <.>|
+        }
+    }
+}
+
+String {
+    |"\"" Body "\""|
+    Body {
+        |(<[^\"\\]> | StrBackslashSequence)+|
+        StrBackslashSequence {
+            |"\\" <.>|
+        }
+    }
+}
+
+Comment {
+    |SingleLineComment|
+    |MultiLineComment|
+    SingleLineComment {
+        |"//" <[^\u000A\u000D\u2028\u2029]>*|
+    }
+    MultiLineComment {
+        |"/*" (<[^\*]> | "*" !"/")* "*/"|
+    }
+}
+
+OtherChars {
+    |<[{,}()@!\|\+\*\?]>+|
+}

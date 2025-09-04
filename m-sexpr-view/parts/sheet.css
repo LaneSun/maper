@@ -1,0 +1,27 @@
+@media (prefers-color-scheme: light) {
+  .st-mn-p-sheet {
+    --mn-sheet-cell-bg-c: #efefef;
+    --mn-sheet-cell-ln-c: #dddddd;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .st-mn-p-sheet {
+    --mn-sheet-cell-bg-c: #222222;
+    --mn-sheet-cell-ln-c: #2f2f2f;
+  }
+}
+
+.st-mn-p-sheet {
+  display: inline-grid;
+  grid-template: repeat(var(--sheet-row), auto) / repeat(var(--sheet-column), auto);
+  border: var(--mn-sheet-cell-ln-c) solid 1px;
+  padding: 1px;
+}
+
+.st-mn-p-sheet-cell {
+  background: var(--mn-sheet-cell-bg-c);
+  margin: 1px;
+  border: var(--mn-sheet-cell-ln-c) solid 1px;
+  padding: 4px 8px;
+}

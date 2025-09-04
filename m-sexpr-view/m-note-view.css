@@ -1,0 +1,86 @@
+@import "./struct-editor.css";
+@import "./parts/sheet.css";
+
+@media (prefers-color-scheme: light) {
+  .st-rt {
+    --mn-p-bg-c: #eeeeee;
+    --mn-p-ln-c: #dddddd;
+    --mn-code-bg-c: #efefef;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .st-rt {
+    --mn-p-bg-c: #222222;
+    --mn-p-ln-c: #333333;
+    --mn-code-bg-c: #222222;
+  }
+}
+
+.st-rt {
+  font-family: serif;
+}
+
+.st-mn-b {
+  font-weight: bold;
+}
+
+.st-mn-i {
+  font-style: italic;
+}
+
+.st-mn-h {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.st-mn-p {
+  font-family: monospace;
+  background: var(--mn-p-bg-c);
+  padding: 0 3px;
+  line-height: 1.5em;
+  margin: 2px 0;
+  border-radius: 4px;
+  border: 1px solid var(--mn-p-ln-c);
+}
+
+.st-mn-sb::before {
+  pointer-events: none;
+  content: "(";
+  color: var(--fg-c);
+}
+
+.st-mn-sb::after {
+  pointer-events: none;
+  content: ")";
+  color: var(--fg-c);
+}
+
+.st-mn-sbl::before {
+  pointer-events: none;
+  content: "(";
+  color: var(--fg-c);
+}
+
+.st-mn-sbr::before {
+  pointer-events: none;
+  content: ")";
+  color: var(--fg-c);
+}
+
+.st-mn-mbl::before {
+  pointer-events: none;
+  content: "[";
+  color: var(--fg-c);
+}
+
+.st-mn-mbr::before {
+  pointer-events: none;
+  content: "]";
+  color: var(--fg-c);
+}
+
+.st-mn-code {
+  font-family: monospace;
+  background: var(--mn-code-bg-c);
+}

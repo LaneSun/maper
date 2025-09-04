@@ -1,0 +1,27 @@
+DefineBlock {
+    |Token "{" (Rule | DefineBlock)+ "}"|
+    Rule {
+        |"|" RuleElem+ "|"|
+        RuleElem {
+            |Assertion|
+            |Sequence|
+            |Token|
+            |Regexp|
+            |String|
+            |Set|
+            Assertion {
+                |"@" RuleElem|
+                |"!" RuleElem|
+            }
+            Set {
+                |"(" SetPart ("|" SetPart)* ")"|
+                SetPart {
+                    |RuleElem+|
+                }
+            }
+            Sequence {
+                |(Token | Regexp | String | Set) (<[\?\*\+]> | "{" Number ("," Number)? "}")|
+            }
+        }
+    }
+}
